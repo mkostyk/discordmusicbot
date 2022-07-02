@@ -9,7 +9,7 @@ module.exports.data =
         .setName("np")
         .setDescription("Wyświetla informacje o obecnym utworze")
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by sprawdzić obecny utwór");

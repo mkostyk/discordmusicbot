@@ -8,7 +8,7 @@ module.exports.data =
         .setName("queue")
         .setDescription("Wyświetla obecną kolejkę")
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by wyświetlić kolejkę");

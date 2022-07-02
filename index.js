@@ -68,7 +68,7 @@ bot.on('interactionCreate', async message => {
 
     if (commandfile) {
         try {
-            commandfile.run(bot, message);
+            commandfile.run(message);
         } catch (error) {
             console.error(error);
         }

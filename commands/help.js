@@ -6,7 +6,7 @@ module.exports.data =
         .setName("help")
         .setDescription("Wyświetla listę komend wraz z opisem")
 
-module.exports.run = async (bot, message) =>{
+module.exports.run = async (message) =>{
 
     let helpEmbed = new Discord.MessageEmbed()
         .setColor("#ff9900")

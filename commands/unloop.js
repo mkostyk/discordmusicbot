@@ -6,7 +6,7 @@ module.exports.data =
         .setName("unloop")
         .setDescription("Przerywa zapętlenie utworu")
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by przerwać zapętlenie utworu");

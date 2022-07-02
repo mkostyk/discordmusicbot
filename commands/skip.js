@@ -6,7 +6,7 @@ module.exports.data =
         .setName("skip")
         .setDescription("Pomija obecny utwór")
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by pominąć utwór");

@@ -89,7 +89,7 @@ const videoFinder = async (query) => {
     return (videoResult.videos.length > 0) ? videoResult.videos[0] : null;
 }
 
-module.exports.run = async (bot, message, args, isPlaylist) => {
+module.exports.run = async (message, args, isPlaylist) => {
     if(!args) {
         args = message.options.getString('input');
     }

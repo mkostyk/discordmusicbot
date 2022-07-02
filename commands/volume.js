@@ -10,7 +10,7 @@ module.exports.data =
             .setDescription('Nowa głośność')
             .setRequired(true))
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const args = message.options.getInteger('input');
     if (args < 0 || args > 200) return message.reply("Głośność musi znajdować się w przedziale od 0 do 200");
 

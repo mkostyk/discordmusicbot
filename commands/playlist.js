@@ -15,7 +15,7 @@ module.exports.data =
             .setRequired(true));
 
 
-module.exports.run = async (bot, message) => {
+module.exports.run = async (message) => {
     const playlistId = message.options.getString('input').split("list=")[1];
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
@@ -43,7 +43,7 @@ module.exports.run = async (bot, message) => {
 
         let videosList = response.data.items;
         for (const video of videosList) {
-            await play.run(bot, message, video.contentDetails.videoId, true);
+            await play.run(message, video.contentDetails.videoId, true);
         }
 
         await message.editReply('Playlista pomyślnie dodana');
