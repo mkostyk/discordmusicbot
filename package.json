@@ -16,6 +16,7 @@
     "fs": "^0.0.1-security",
     "get-video-duration": "^3.1.0",
     "globaloffensive": "^2.1.0",
+    "googleapis": "^104.0.0",
     "libsodium-wrappers": "^0.7.9",
     "mathjs": "^10.5.1",
     "merge-options": "^3.0.4",

@@ -1,5 +1,6 @@
 // TODO - ładniejszy error handling
 // TODO - permisje
+// TODO - shuffle, stop
 
 Discord = require("discord.js");
 const fs = require("fs");

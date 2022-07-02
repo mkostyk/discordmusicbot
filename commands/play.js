@@ -39,12 +39,22 @@ async function createNewPlayer(voiceChannel) {
 }
 
 const videoFinder = async (query) => {
+    console.log("Query: " + query);
     const videoResult = await ytSearch(query);
-    return (videoResult.videos.length > 1) ? videoResult.videos[0] : null;
+    /*let legitURL = ytdl.validateURL(query);
+
+    if (legitURL) {
+        videoResult.filter(video => video.result)
+    }*/
+
+    return (videoResult.videos.length > 0) ? videoResult.videos[0] : null;
 }
 
-module.exports.run = async (bot, message) =>{
-    const args = message.options.getString('input');
+module.exports.run = async (bot, message, args, isPlaylist) => {
+    if(!args) {
+        args = message.options.getString('input');
+    }
+
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by puścić utwór");
@@ -60,22 +70,25 @@ module.exports.run = async (bot, message) =>{
     if (vcInfo) {
         player = vcInfo.player;
     } else {
-        player = await createNewPlayer(voiceChannel, message.user); // TODO - test bez await
+        player = await createNewPlayer(voiceChannel, message.user);
         vcInfo = voiceChannels.get(voiceChannel.id);
     }
 
-    const video = await videoFinder(args); // TODO - test bez await
+    const video = await videoFinder(args);
+    console.log("URL: " + video.url);
     vcInfo.queue.add(videoInfo(video, message.user));
-    message.reply(`Dodano do kolejki: ***${video.title}***`);
+    if (!isPlaylist) {
+        message.reply(`Dodano do kolejki: ***${video.title}***`);
+    }
 
     if (vcInfo.queue.length === 1)
     {
-        playNext();
+        await playNext();
     }
 
     async function playNext() {
         if (vcInfo.queue.length === 0) {
-            connection.destroy();
+            voiceChannels.get(voiceChannel.id).connection.destroy();
             player.stop();
             return;
         }
@@ -90,7 +103,7 @@ module.exports.run = async (bot, message) =>{
             highWaterMark: 1 << 30,
             liveBuffer: 1 << 30,
             dlChunkSize: 0,
-            bitrate: 128,
+            bitrate: 128, // Discord nie obsługuje więcej
         });
 
         const resource = createAudioResource(stream, {inlineVolume: true});
