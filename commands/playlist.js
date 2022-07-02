@@ -1,34 +1,22 @@
-// TODO
-
 const play = require('./play')
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { google } = require('googleapis');
 const { youtube_key } = require('../config.json');
-const {timeToString} = require("../helpers/helper");
-const {voiceChannels} = require("../index");
-const {getVoiceConnection} = require("@discordjs/voice");
+const { voiceChannels } = require("../index");
+const { getVoiceConnection } = require("@discordjs/voice");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("playlist")
         .setDescription("Odtwarza playlistę z yt")
-
-function authenticate() {
-    return google.auth2.getAuthInstance()
-        .signIn({scope: "https://www.googleapis.com/auth/youtube.readonly"})
-        .then(function() { console.log("Sign-in successful"); },
-            function(err) { console.error("Error signing in", err); });
-}
-
-function loadClient() {
-    google.client.setApiKey(`${youtube_key}`);
-    return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
-        .then(function() { console.log("GAPI client loaded for API"); },
-            function(err) { console.error("Error loading GAPI client for API", err); });
-}
+        .addStringOption(option => option
+            .setName('input')
+            .setDescription('Link lub nazwa filmu')
+            .setRequired(true));
 
 
 module.exports.run = async (bot, message) => {
+    const args = message.options.getString('input');
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by puścić utwór");
@@ -50,7 +38,7 @@ module.exports.run = async (bot, message) => {
             "contentDetails"
         ],
         "maxResults": 50,
-        "playlistId": "PLbZDz1wfU8diMkS1NwCSdkX3S5byvoPJR"
+        "playlistId": args
     }).then(async function(response) {
         await message.reply(`Trwa dodawanie playlisty do kolejki...`);
 
@@ -63,8 +51,4 @@ module.exports.run = async (bot, message) => {
 
         await message.editReply('Playlista pomyślnie dodana');
     }, function(err) { console.error(err); });
-}
-
-module.exports.help = {
-    name: "playlist",
 }
