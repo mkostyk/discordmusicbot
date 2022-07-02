@@ -11,12 +11,12 @@ module.exports.data =
         .setDescription("Odtwarza playlistę z yt")
         .addStringOption(option => option
             .setName('input')
-            .setDescription('Link lub nazwa filmu')
+            .setDescription('Link do playlisty')
             .setRequired(true));
 
 
 module.exports.run = async (bot, message) => {
-    const args = message.options.getString('input');
+    const playlistId = message.options.getString('input').split("?list=")[1];
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by puścić utwór");
@@ -38,7 +38,7 @@ module.exports.run = async (bot, message) => {
             "contentDetails"
         ],
         "maxResults": 50,
-        "playlistId": args
+        "playlistId": playlistId
     }).then(async function(response) {
         await message.reply(`Trwa dodawanie playlisty do kolejki...`);
 
