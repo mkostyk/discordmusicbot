@@ -39,14 +39,7 @@ async function createNewPlayer(voiceChannel) {
 }
 
 const videoFinder = async (query) => {
-    console.log("Query: " + query);
     const videoResult = await ytSearch(query);
-    /*let legitURL = ytdl.validateURL(query);
-
-    if (legitURL) {
-        videoResult.filter(video => video.result)
-    }*/
-
     return (videoResult.videos.length > 0) ? videoResult.videos[0] : null;
 }
 
@@ -75,7 +68,6 @@ module.exports.run = async (bot, message, args, isPlaylist) => {
     }
 
     const video = await videoFinder(args);
-    console.log("URL: " + video.url);
     vcInfo.queue.add(videoInfo(video, message.user));
     if (!isPlaylist) {
         message.reply(`Dodano do kolejki: ***${video.title}***`);
@@ -88,8 +80,9 @@ module.exports.run = async (bot, message, args, isPlaylist) => {
 
     async function playNext() {
         if (vcInfo.queue.length === 0) {
-            voiceChannels.get(voiceChannel.id).connection.destroy();
             player.stop();
+            voiceChannels.get(voiceChannel.id).connection.destroy();
+            voiceChannels.delete(voiceChannel.id);
             return;
         }
 

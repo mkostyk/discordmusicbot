@@ -13,6 +13,7 @@
  
  ## New in v0.2:
  - playing playlists (beta)
+ - disconnecting from channel
  
  ## How to use?
  - Install all the required packages mentioned in package.json

@@ -32,7 +32,6 @@ module.exports.run = async (bot, message) => {
         auth: youtube_key
     });
 
-    // Make sure the client is loaded and sign-in is complete before calling this method.
     return service.playlistItems.list({
         "part": [
             "contentDetails"
@@ -44,8 +43,6 @@ module.exports.run = async (bot, message) => {
 
         let videosList = response.data.items;
         for (const video of videosList) {
-            console.log(video);
-            console.log("Original: " + `https://www.youtube.com/watch?v=${video.contentDetails.videoId}`);
             await play.run(bot, message, video.contentDetails.videoId, true);
         }
 
