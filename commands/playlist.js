@@ -16,7 +16,7 @@ module.exports.data =
 
 
 module.exports.run = async (bot, message) => {
-    const playlistId = message.options.getString('input').split("?list=")[1];
+    const playlistId = message.options.getString('input').split("list=")[1];
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by puścić utwór");
