@@ -67,7 +67,6 @@ module.exports.run = async (message) => {
                     .setColor("#ff9900")
                     .setTitle(songTitle + " - Tekst")
                     .setThumbnail(songThumbnail)
-                    .setDescription("test")
                     .addField(`Tekst Piosenki (${i + 1}/${songEmbedsNumber}):`, embedLyrics);
                 message.channel.send({ embeds: [lyricsEmbed] });
             }
