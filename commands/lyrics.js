@@ -44,18 +44,26 @@ module.exports.run = async (message) => {
     // Bierzemy tytuł do pierwszego znaku niebędącego literą, spacją lub myślnikiem
     let songTitle = video.title.split(/([^\sa-zA-Z-])/)[0];
 
+    let error = false;
+
+    await message.reply("Szukanie piosenki...");
+
     fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(songTitle)}`).then((res) => {
         res.json().then((songInfo) => {
             if (!songInfo || songInfo.error) {
-                return message.reply("Nie znaleziono takiej piosenki");
+                error = true;
+                return message.editReply("Nie znaleziono takiej piosenki");
             }
 
             const songThumbnail = songInfo.thumbnail.genius;
             const songLyrics = songInfo.lyrics;
 
-            if (songLyrics > LENGTH_LIMIT) {
-                return message.reply("Tekst tej piosenki jest zbyt długi")
+            if (songLyrics.length > LENGTH_LIMIT) {
+                error = true;
+                return message.editReply("Tekst tej piosenki jest zbyt długi");
             }
+
+            message.editReply("Piosenka znaleziona");
 
             // Ile embedów będzie potrzebny do wypisania całości tekstu
             const songEmbedsNumber = Math.ceil(songLyrics.length / EMBED_LENGTH_LIMIT);
@@ -72,7 +80,5 @@ module.exports.run = async (message) => {
             }
         });
     });
-
-    message.reply("Znaleziono piosenkę")
 }
 
