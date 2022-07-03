@@ -1,6 +1,6 @@
 const ytdl = require("ytdl-core");
 const ytSearch = require("yt-search");
-const { voiceChannelInfo, videoInfo } = require("../helpers/helper");
+const { voiceChannelInfo, videoInfo, videoFinder } = require("../helpers/helper");
 const List = require("collections/list");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const {
@@ -82,11 +82,6 @@ async function createNewPlayer(voiceChannel) {
 
         playNext(voiceChannel);
     });
-}
-
-const videoFinder = async (query) => {
-    const videoResult = await ytSearch(query);
-    return (videoResult.videos.length > 0) ? videoResult.videos[0] : null;
 }
 
 module.exports.run = async (message, args, isPlaylist) => {

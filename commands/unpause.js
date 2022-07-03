@@ -16,7 +16,9 @@ module.exports.run = async (message) => {
     if (!vcInfo) {
         return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
     }
+
     vcInfo.player.unpause();
+    vcInfo.paused = false;
     vcInfo.lastUnpause = new Date();
 
     message.reply("Wznowiono utwór");

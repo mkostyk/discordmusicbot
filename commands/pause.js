@@ -18,6 +18,8 @@ module.exports.run = async (message) => {
     }
 
     vcInfo.player.pause();
+    vcInfo.paused = true;
+
     // Dodajemy czas który upłynął od ostatniej pauzy
     vcInfo.lastUnpauseTimestamp += new Date() - vcInfo.lastUnpause;
 

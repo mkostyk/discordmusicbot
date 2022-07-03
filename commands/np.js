@@ -15,19 +15,22 @@ module.exports.run = async (message) => {
         return message.reply("Musisz być na kanale by sprawdzić obecny utwór");
     }
 
-    let nowPlaying = voiceChannels.get(voiceChannel.id);
-    if (!nowPlaying) {
+    let vcInfo = voiceChannels.get(voiceChannel.id);
+    if (!vcInfo) {
         return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
     }
 
-    if (nowPlaying.queue.length === 0) {
+    if (vcInfo.queue.length === 0) {
         return message.reply("Obecnie na bocie nic nie leci");
     }
 
-    let video = nowPlaying.queue.peek().video;
-    let requestedBy = nowPlaying.queue.peek().requestedBy;
-    let time = (new Date() - nowPlaying.lastUnpause + nowPlaying.lastUnpauseTimestamp) / 1000;
+    let video = vcInfo.queue.peek().video;
+    let requestedBy = vcInfo.queue.peek().requestedBy;
     let duration = video.seconds;
+    let time = (new Date() - vcInfo.lastUnpause + vcInfo.lastUnpauseTimestamp) / 1000;
+    if (vcInfo.paused) {
+        time = vcInfo.lastUnpauseTimestamp / 1000;
+    }
 
     let nowPlayingEmbed = new Discord.MessageEmbed()
         .setColor("#ff9900")
