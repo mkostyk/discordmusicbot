@@ -3,7 +3,7 @@ This is a Discord music bot written in Discord.js v13.
 
 ## Features:
 - play songs by name or yt link
-- play plalists
+- play playlists
 - loop/unloop
 - pause/unpause
 - info about currently playing song
@@ -30,7 +30,7 @@ This is a Discord music bot written in Discord.js v13.
 - Create config.json file and make it look like this
   ```
 	{ 
-		"token": "YOUR_BOT_TOKEN",
+		"token": "YOUR_BOT_TOKEN"
 	}
   ```
 - start command prompt from the folder index.js is located in
