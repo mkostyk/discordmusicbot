@@ -1,8 +1,9 @@
 # discordmusicbot
-This is a discord music bot written in Discord.js v13.
+This is a Discord music bot written in Discord.js v13.
 
 ## Features:
 - play songs by name or yt link
+- play plalists
 - loop/unloop
 - pause/unpause
 - info about currently playing song
@@ -18,14 +19,19 @@ This is a discord music bot written in Discord.js v13.
 - v0.3:
     - /np fixes
     - song lyrics command
+- v0.4:
+    - playing playlists is out of beta
+    - queue now has pages
+    - minor bug fixes
 
 ## How to use?
 - Install all the required packages mentioned in package.json
-- Get bot token from [here](https://discord.com/developers/applications) and Youtube API Key from [here](https://developers.google.com/youtube/registering_an_application)
+- Get bot token from [here](https://discord.com/developers/applications)
 - Create config.json file and make it look like this
   ```
-    "token": "YOUR_BOT_TOKEN",
-    "youtube_key": "YOUR_YOUTUBE_API_KEY"
+	{ 
+		"token": "YOUR_BOT_TOKEN",
+	}
   ```
 - start command prompt from the folder index.js is located in
 - run ``` node index.js ``` in your command prompt to start bot.
