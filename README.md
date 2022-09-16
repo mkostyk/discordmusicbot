@@ -2,13 +2,13 @@
 This is a Discord music bot written in Discord.js v13.
 
 ## Features:
-- play songs by name or yt link
-- play playlists
-- loop/unloop
+- playing songs by name or yt link
+- playing playlists
+- loop
 - pause/unpause
 - info about currently playing song
-- queue
-- skipping
+- queue with a shuffling option
+- skipping & voteskipping
 - setting volume
 - multi-server support
 
@@ -22,6 +22,12 @@ This is a Discord music bot written in Discord.js v13.
 - v0.4:
     - playing playlists is out of beta
     - queue now has pages
+    - minor bug fixes
+- v0.5:
+    - commands now require certain permissions
+    - shuffling queue
+    - skipping multiple songs with /skip and /skip-range
+    - /voteskip to skip song with voting
     - minor bug fixes
 
 ## How to use?

@@ -1,6 +1,8 @@
 const ytdl = require("ytdl-core");
 const { voiceChannelInfo, videoInfo, videoFinder } = require("../helpers/helper");
 const List = require("collections/list");
+const Set = require("collections/set");
+const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const {
     createAudioPlayer,
@@ -10,11 +12,13 @@ const {
 } = require('@discordjs/voice');
 
 let { voiceChannels } = require('../index')
+const ytSearch = require("yt-search");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("play")
         .setDescription("Odtwarza film z yt lub dodaje go do kolejki odtwarzania")
+        .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
         .addStringOption(option => option
                 .setName('input')
                 .setDescription('Link lub nazwa filmu')
@@ -53,11 +57,13 @@ const playNext = async (voiceChannel) => {
     vcInfo.lastUnpause = new Date();
     vcInfo.lastUnpauseTimestamp = 0;
     vcInfo.isIdle = false;
+    vcInfo.skipVotes = new Set();
+    vcInfo.nowPlaying = vcInfo.queue.peek();
+    vcInfo.queue.shift();
 
     await player.play(resource);
 }
 
-module.exports.playNext = async (voiceChannel) => playNext(voiceChannel);
 
 const createNewPlayer = async (voiceChannel) => {
     let connection = joinVoiceChannel({
@@ -67,7 +73,7 @@ const createNewPlayer = async (voiceChannel) => {
     });
 
     let player = createAudioPlayer();
-    let vcInfo = voiceChannelInfo(connection, player, new List(), false, null, 0, 0, true);
+    let vcInfo = voiceChannelInfo(connection, player, new List(), null, false, null, 0, 0, true, new Set());
 
     connection.subscribe(player);
     voiceChannels.set(voiceChannel.id, vcInfo);
@@ -77,9 +83,8 @@ const createNewPlayer = async (voiceChannel) => {
     player.on('error', (error) => console.error(error));
 
     player.on(AudioPlayerStatus.Idle, () => {
-        const nowPlaying = vcInfo.queue.peek().video;
-        const requestedBy = vcInfo.queue.peek().requestedBy;
-        vcInfo.queue.shift();
+        const nowPlaying = vcInfo.nowPlaying.video;
+        const requestedBy = vcInfo.nowPlaying.requestedBy;
         vcInfo.isIdle = true;
 
         if (vcInfo.loop) {
@@ -90,7 +95,36 @@ const createNewPlayer = async (voiceChannel) => {
     });
 }
 
-module.exports.createNewPlayer = async (voiceChannel) => createNewPlayer(voiceChannel);
+
+const playPlaylist = async (message, vcInfo, voiceChannel) => {
+    const playlistId = message.options.getString('input').split("list=")[1];
+    let playlist = await ytSearch({ listId: playlistId });
+    if (!playlist) {
+        message.reply("Nie znaleziono playlisty. Sprawdź czy nie została ona ustawiona jako prywatna.")
+    }
+
+    await message.reply(`Trwa dodawanie playlisty do kolejki...`);
+
+    for (const video of playlist.videos) {
+        await vcInfo.queue.add(videoInfo(video, message.user));
+    }
+
+    await message.editReply('Playlista pomyślnie dodana');
+    await playNext(voiceChannel);
+}
+
+
+const playVideo = async (args, message, vcInfo, voiceChannel) => {
+    const video = await videoFinder(args);
+    if (!video) {
+        return message.reply("Nie znaleziono podanego utworu");
+    }
+
+    vcInfo.queue.add(videoInfo(video, message.user));
+    message.reply(`Dodano do kolejki: ***${video.title}***`);
+
+    await playNext(voiceChannel);
+}
 
 
 module.exports.run = async (message, args) => {
@@ -113,13 +147,10 @@ module.exports.run = async (message, args) => {
         vcInfo = voiceChannels.get(voiceChannel.id);
     }
 
-    const video = await videoFinder(args);
-    if (!video) {
-        return message.reply("Nie znaleziono podanego utworu");
+    let isPlaylist = args.includes("playlist?list=");
+    if (isPlaylist) {
+        await playPlaylist(message, vcInfo, voiceChannel);
+    } else {
+        await playVideo(args, message, vcInfo, voiceChannel);
     }
-
-    vcInfo.queue.add(videoInfo(video, message.user));
-    message.reply(`Dodano do kolejki: ***${video.title}***`);
-
-    await playNext(voiceChannel);
 }

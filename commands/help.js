@@ -1,10 +1,12 @@
 const Discord = require("discord.js");
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("help")
         .setDescription("Wyświetla listę komend wraz z opisem")
+        .setDefaultMemberPermissions(Permissions.FLAGS.SEND_MESSAGES);
 
 module.exports.run = async (message) =>{
 

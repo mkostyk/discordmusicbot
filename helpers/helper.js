@@ -12,5 +12,6 @@ module.exports.videoFinder = async (query) => {
 }
 
 const Struct = (...keys) => ((...v) => keys.reduce((o, k, i) => {o[k] = v[i]; return o} , {}));
-module.exports.voiceChannelInfo = Struct('connection', 'player', 'queue', 'loop', 'resource', 'paused', 'lastUnpause', 'lastUnpauseTimestamp', 'isIdle');
+module.exports.voiceChannelInfo = Struct('connection', 'player', 'queue', 'nowPlaying', 'loop', 'resource',
+                                              'paused', 'lastUnpause', 'lastUnpauseTimestamp', 'isIdle', 'skipVotes');
 module.exports.videoInfo = Struct('video', 'requestedBy');

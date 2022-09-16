@@ -1,10 +1,17 @@
 let { voiceChannels } = require('../index');
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
+const Set = require("collections/set");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("skip")
-        .setDescription("Pomija obecny utwór")
+        .setDescription("Pomija początkowe utwory")
+        .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
+        .addIntegerOption(option => option
+            .setName('count')
+            .setDescription('Liczba utworów do pominięcia')
+            .setRequired(false))
 
 module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
@@ -17,10 +24,18 @@ module.exports.run = async (message) => {
         return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
     }
 
-    vcInfo.player.stop();
-    message.reply("Utwór pominięty")
-}
+    let count = message.options.getInteger('count');
 
-module.exports.help = {
-    aliases: ["fs"]
+    if (!count) {
+        count = 1;
+    }
+
+    // Usuwamy do count - 1, ponieważ ostatni element zostanie usunięty poprzez player.stop()
+    for (let index = 0; index < count - 1 && vcInfo.queue.length > 0; index++) {
+        vcInfo.queue.shift();
+    }
+
+    vcInfo.player.stop();
+    vcInfo.skipVotes = new Set();
+    message.reply("Utwory pominięte")
 }

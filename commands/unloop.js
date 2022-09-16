@@ -1,10 +1,12 @@
 let { voiceChannels } = require('../index');
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("unloop")
         .setDescription("Przerywa zapętlenie utworu")
+        .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
 
 module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;

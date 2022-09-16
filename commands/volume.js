@@ -1,10 +1,12 @@
 let { voiceChannels } = require('../index');
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("volume")
         .setDescription("Ustawia głośność na podaną wartość z zakresu 0 - 200")
+        .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
         .addIntegerOption(option => option
             .setName('input')
             .setDescription('Nowa głośność')

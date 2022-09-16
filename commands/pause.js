@@ -1,10 +1,12 @@
-let { voiceChannels } = require('../index')
-const {SlashCommandBuilder} = require("@discordjs/builders");
+let { voiceChannels } = require('../index');
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("pause")
         .setDescription("Wstrzymuje obecny utwór")
+        .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
 
 module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;

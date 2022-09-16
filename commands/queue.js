@@ -1,11 +1,13 @@
 const { voiceChannels } = require('../index');
 const Discord = require("discord.js");
+const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("queue")
         .setDescription("Wyświetla obecną kolejkę")
+        .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
 
 const showQueue = async (message, queue, page) => {
     let numberOfPages = Math.ceil(queue.length / 10);

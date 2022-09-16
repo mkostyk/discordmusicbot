@@ -2,12 +2,14 @@ const { voiceChannels } = require('../index');
 const { timeToString } = require('../helpers/helper');
 const progressbar = require('string-progressbar');
 const Discord = require("discord.js");
-const {SlashCommandBuilder} = require("@discordjs/builders");
+const { Permissions } = require('discord.js');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("np")
         .setDescription("Wyświetla informacje o obecnym utworze")
+        .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
 
 module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
@@ -24,8 +26,8 @@ module.exports.run = async (message) => {
         return message.reply("Obecnie na bocie nic nie leci");
     }
 
-    let video = vcInfo.queue.peek().video;
-    let requestedBy = vcInfo.queue.peek().requestedBy;
+    let video = vcInfo.nowPlaying.video;
+    let requestedBy = vcInfo.nowPlaying.requestedBy;
     let duration = video.duration.seconds
     let time = (new Date() - vcInfo.lastUnpause + vcInfo.lastUnpauseTimestamp) / 1000;
     if (vcInfo.paused) {

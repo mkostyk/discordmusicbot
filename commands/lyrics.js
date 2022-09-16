@@ -1,6 +1,7 @@
 const { voiceChannels } = require('../index');
 const { videoFinder } = require("../helpers/helper");
 const Discord = require("discord.js");
+const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const fetch = require('cross-fetch');
 
@@ -12,10 +13,11 @@ module.exports.data =
     new SlashCommandBuilder()
         .setName("lyrics")
         .setDescription("Wyświetla tekst piosenki")
+        .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
         .addStringOption(option => option
             .setName('input')
             .setDescription('Link lub nazwa filmu')
-            .setRequired(false));
+            .setRequired(false))
 
 
 module.exports.run = async (message) => {
@@ -36,20 +38,21 @@ module.exports.run = async (message) => {
             return message.reply("Obecnie nie gra żaden utwór");
         }
 
-        args = vcInfo.queue.peek().video.title;
+        args = vcInfo.nowPlaying.video.title;
     }
 
     let video = await videoFinder(args);
 
     // Bierzemy tytuł do pierwszego znaku niebędącego literą, spacją lub myślnikiem
-    let songTitle = video.title.split(/([^\sa-zA-Z-])/)[0];
+    let songTitle = video.title.split(/([^\sa-zA-Z-'])/)[0];
+    console.log(songTitle);
 
     await message.reply("Szukanie piosenki...");
 
     fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(songTitle)}`).then((res) => {
         res.json().then((songInfo) => {
             if (!songInfo || songInfo.error) {
-                return message.editReply("Nie znaleziono takiej piosenki");
+                return message.editReply("Nie znaleziono piosenki");
             }
 
             const songThumbnail = songInfo.thumbnail.genius;
