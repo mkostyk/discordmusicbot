@@ -12,14 +12,22 @@ module.exports.run = async (message) =>{
 
     let helpEmbed = new Discord.MessageEmbed()
         .setColor("#ff9900")
-        .setTitle("Komendy muzyczne:")
-        .addField("/play lub /p <link lub tytuł do filmiku na yt>", "Odtwarza film z yt lub dodaje go do kolejki odtwarzania")
-        .addField("/disconnect lub /dis", "Rozłącza bota z kanału głosowego")
-        .addField("/loop", "Włącza lub wyłącza zapętlenie")
-        .addField("/volume <liczba od 0 do 200>", "Zmienia głośność utworów")
-        .addField("/skip lub /fs", "Pomija jedną pozycję w kolejce bota")
+        .setTitle("Komendy bota:")
+        .setDescription("Komendy /dis, /loop, /unloop /pause, /unpause, /shuffle, /skip, /skip-range i /volume wymagają uprawnień" +
+            " do zarządzania kanałami.")
+        .addField("/dis", "Rozłącza bota z kanału głosowego")
+        .addField("/loop", "Włącza zapętlenie")
+        .addField("/lyrics", "Wyświetla tekst podanej piosenki (domyślnie obecnie grającej)")
         .addField("/np", "Wyświetla obecnie grającą piosenkę")
-        .addField("/queue lub /q", "Wyświetla kolejkę piosenek")
+        .addField("/pause", "Pauzuje obecnie grającą piosenkę")
+        .addField("/play", "Odtwarza film/playlistę z yt lub dodaje go do kolejki odtwarzania")
+        .addField("/queue", "Wyświetla kolejkę")
+        .addField("/shuffle", "Miesza kolejkę")
+        .addField("/skip", "Pomija podaną liczbę następnych utworów (domyślnie 1)")
+        .addField("/skip-range", "Usuwa z kolejki utwory w podanym zakresie")
+        .addField("/unloop", "Wyłącza zapętlenie")
+        .addField("/unpause", "Odpauzowuje obecnie grającą piosenkę")
+        .addField("/volume", "Zmienia głośność utworów (zakres 0 - 200)")
 
     message.reply({ embeds: [helpEmbed] });
 }
