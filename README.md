@@ -13,22 +13,22 @@ This is a Discord music bot written in Discord.js v13.
 - multi-server support
 
 ## New:
-- v0.2:
-    - playing playlists (beta)
-    - disconnecting from channel
-- v0.3:
-    - /np fixes
-    - song lyrics command
-- v0.4:
-    - playing playlists is out of beta
-    - queue now has pages
-    - minor bug fixes
 - v0.5:
     - commands now require certain permissions
     - shuffling queue
     - skipping multiple songs with /skip and /skip-range
     - /voteskip to skip song with voting
     - minor bug fixes
+- v0.4:
+    - playing playlists is out of beta
+    - queue now has pages
+    - minor bug fixes
+- v0.3:
+    - /np fixes
+    - song lyrics command
+- v0.2:
+    - playing playlists (beta)
+    - disconnecting from channel
 
 ## How to use?
 - Install all the required packages mentioned in package.json
