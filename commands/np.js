@@ -26,7 +26,7 @@ module.exports.run = async (message) => {
 
     let video = vcInfo.queue.peek().video;
     let requestedBy = vcInfo.queue.peek().requestedBy;
-    let duration = video.seconds;
+    let duration = video.duration.seconds
     let time = (new Date() - vcInfo.lastUnpause + vcInfo.lastUnpauseTimestamp) / 1000;
     if (vcInfo.paused) {
         time = vcInfo.lastUnpauseTimestamp / 1000;
@@ -40,7 +40,6 @@ module.exports.run = async (message) => {
         .addField("Czas Trwania: ", "`" + timeToString(time) + " / " + timeToString(duration) + "`")
         .addField("Puszczone przez: ", `<@${requestedBy.id}>`)
         .addField("Autor: ", video.author.name, true)
-        .addField("Wyświetlenia: ", video.views.toLocaleString(), true)
 
     message.reply({ embeds: [nowPlayingEmbed] })
 

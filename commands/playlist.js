@@ -1,9 +1,9 @@
-const play = require('./play')
+const { playNext, createNewPlayer } = require('./play');
+const ytSearch = require("yt-search");
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { google } = require('googleapis');
-const { youtube_key } = require('../config.json');
 const { voiceChannels } = require("../index");
 const { getVoiceConnection } = require("@discordjs/voice");
+const {videoInfo} = require("../helpers/helper");
 
 module.exports.data =
     new SlashCommandBuilder()
@@ -17,6 +17,7 @@ module.exports.data =
 
 module.exports.run = async (message) => {
     const playlistId = message.options.getString('input').split("list=")[1];
+
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.reply("Musisz być na kanale by puścić utwór");
@@ -27,25 +28,22 @@ module.exports.run = async (message) => {
         return message.reply("Bot nie może być na więcej niż jednym kanale naraz");
     }
 
-    const service = google.youtube({
-        version: 'v3',
-        auth: youtube_key
-    });
+    if (!vcInfo) {
+        await createNewPlayer(voiceChannel, message.user);
+        vcInfo = voiceChannels.get(voiceChannel.id);
+    }
 
-    return service.playlistItems.list({
-        "part": [
-            "contentDetails"
-        ],
-        "maxResults": 50,
-        "playlistId": playlistId
-    }).then(async function(response) {
-        await message.reply(`Trwa dodawanie playlisty do kolejki...`);
+    let playlist = await ytSearch({ listId: playlistId });
+    if (!playlist) {
+        message.reply("Nie znaleziono playlisty. Sprawdź czy nie została ona ustawiona jako prywatna.")
+    }
 
-        let videosList = response.data.items;
-        for (const video of videosList) {
-            await play.run(message, video.contentDetails.videoId, true);
-        }
+    await message.reply(`Trwa dodawanie playlisty do kolejki...`);
 
-        await message.editReply('Playlista pomyślnie dodana');
-    }, function(err) { console.error(err); });
+    for (const video of playlist.videos) {
+        await vcInfo.queue.add(videoInfo(video, message.user));
+    }
+
+    await message.editReply('Playlista pomyślnie dodana');
+    await playNext(voiceChannel);
 }

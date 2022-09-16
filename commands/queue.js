@@ -1,5 +1,4 @@
 const { voiceChannels } = require('../index');
-const { timeToString } = require('../helpers/helper');
 const Discord = require("discord.js");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
@@ -7,6 +6,40 @@ module.exports.data =
     new SlashCommandBuilder()
         .setName("queue")
         .setDescription("Wyświetla obecną kolejkę")
+
+const showQueue = async (message, queue, page) => {
+    let numberOfPages = Math.ceil(queue.length / 10);
+    let queueEmbed = new Discord.MessageEmbed()
+        .setColor("#ff9900")
+        .setTitle(`Kolejka (strona ${page}/${numberOfPages}):`)
+
+    let error = false;
+    let startPosition = (page - 1) * 10, endPosition = page * 10 - 1;
+    let queueArray = Array.from(queue);
+    for (let index = startPosition; index <= endPosition && index < queue.length; index++) {
+        let info = queueArray[index];
+        queueEmbed.addField(`**${index + 1}.** ${info.video.title} ` + "[" + info.video.duration.timestamp + "]",
+            `Puszczone przez: <@${info.requestedBy.id}>`);
+    }
+
+    if (!error) {
+        await message.editReply({ embeds: [queueEmbed] })
+    }
+}
+
+
+const removeReactionByUser = async (message, userId) => {
+    const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(userId));
+
+    try {
+        for (const reaction of userReactions.values()) {
+            await reaction.users.remove(userId);
+        }
+    } catch (error) {
+        console.error('Błąd usuwania reakcji');
+    }
+}
+
 
 module.exports.run = async (message) => {
     const voiceChannel = message.member.voice.channel;
@@ -25,19 +58,35 @@ module.exports.run = async (message) => {
         return message.reply(`Kolejka jest pusta!`);
     }
 
-    let queueEmbed = new Discord.MessageEmbed()
-        .setColor("#ff9900")
-        .setTitle("Kolejka:")
+    let page = 1;
+    let numberOfPages = Math.ceil(queue.length / 10);
 
-    let error = false;
-    Array.from(queue).forEach((info, index) => {
-        queueEmbed.addField(`**${index + 1}.** ${info.video.title} ` + "[" + timeToString(info.video.seconds) + "]",
-                            `Puszczone przez: <@${info.requestedBy.id}>`);
+    // To pozwala używać zawsze message.editReply w showQueue()
+    let tempEmbed = new Discord.MessageEmbed().setTitle(`Wyświetlanie kolejki...`);
+    await message.reply({ embeds: [tempEmbed] });
+
+    const botMessage = await message.fetchReply();
+    await botMessage.react('⬅️');
+    await botMessage.react('➡️');
+
+    await showQueue(message, queue, 1);
+
+    const filter = (reaction, user) => {
+        return ['➡️', '⬅️'].includes(reaction.emoji.name) && user.id === message.user.id;
+    };
+
+    const collector = botMessage.createReactionCollector({ filter, time: 3600000 });
+
+    collector.on('collect', (reaction, user) => {
+        if (reaction.emoji.name === '➡️') {
+            page = Math.min(page + 1, numberOfPages);
+        } else {
+            page = Math.max(page - 1, 1);
+        }
+
+        removeReactionByUser(botMessage, user.id);
+        showQueue(message, queue, page);
     });
-
-    if (!error) {
-        message.reply({ embeds: [queueEmbed] })
-    }
 }
 
 module.exports.help = {

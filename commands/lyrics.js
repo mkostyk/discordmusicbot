@@ -44,14 +44,11 @@ module.exports.run = async (message) => {
     // Bierzemy tytuł do pierwszego znaku niebędącego literą, spacją lub myślnikiem
     let songTitle = video.title.split(/([^\sa-zA-Z-])/)[0];
 
-    let error = false;
-
     await message.reply("Szukanie piosenki...");
 
     fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(songTitle)}`).then((res) => {
         res.json().then((songInfo) => {
             if (!songInfo || songInfo.error) {
-                error = true;
                 return message.editReply("Nie znaleziono takiej piosenki");
             }
 
@@ -59,7 +56,6 @@ module.exports.run = async (message) => {
             const songLyrics = songInfo.lyrics;
 
             if (songLyrics.length > LENGTH_LIMIT) {
-                error = true;
                 return message.editReply("Tekst tej piosenki jest zbyt długi");
             }
 

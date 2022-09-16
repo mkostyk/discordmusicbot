@@ -1,5 +1,4 @@
 const ytdl = require("ytdl-core");
-const ytSearch = require("yt-search");
 const { voiceChannelInfo, videoInfo, videoFinder } = require("../helpers/helper");
 const List = require("collections/list");
 const { SlashCommandBuilder } = require("@discordjs/builders");
@@ -22,8 +21,10 @@ module.exports.data =
                 .setRequired(true));
 
 
-async function playNext(voiceChannel) {
+const playNext = async (voiceChannel) => {
     let vcInfo = voiceChannels.get(voiceChannel.id);
+    if (vcInfo.isIdle === false) return;
+
     let player = vcInfo.player;
 
     if (vcInfo.queue.length === 0) {
@@ -37,7 +38,8 @@ async function playNext(voiceChannel) {
 
     // Nie ruszać, ytdl ma buga w node.js wersje >=16, te śmieszne opcje pozwalają zminimalizować jego
     // negatywne skutki.
-    const stream = ytdl(nowPlaying.url, {
+    let url = `https://youtube.com/watch?v=${nowPlaying.videoId}`;
+    const stream = ytdl(url, {
         filter: "audioonly",
         highWaterMark: 1 << 30,
         liveBuffer: 1 << 30,
@@ -50,11 +52,14 @@ async function playNext(voiceChannel) {
     vcInfo.resource = resource;
     vcInfo.lastUnpause = new Date();
     vcInfo.lastUnpauseTimestamp = 0;
+    vcInfo.isIdle = false;
 
     await player.play(resource);
 }
 
-async function createNewPlayer(voiceChannel) {
+module.exports.playNext = async (voiceChannel) => playNext(voiceChannel);
+
+const createNewPlayer = async (voiceChannel) => {
     let connection = joinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: voiceChannel.guild.id,
@@ -62,7 +67,7 @@ async function createNewPlayer(voiceChannel) {
     });
 
     let player = createAudioPlayer();
-    let vcInfo = voiceChannelInfo(connection, player, new List(), false, null, 0, 0);
+    let vcInfo = voiceChannelInfo(connection, player, new List(), false, null, 0, 0, true);
 
     connection.subscribe(player);
     voiceChannels.set(voiceChannel.id, vcInfo);
@@ -75,6 +80,7 @@ async function createNewPlayer(voiceChannel) {
         const nowPlaying = vcInfo.queue.peek().video;
         const requestedBy = vcInfo.queue.peek().requestedBy;
         vcInfo.queue.shift();
+        vcInfo.isIdle = true;
 
         if (vcInfo.loop) {
             vcInfo.queue.add(videoInfo(nowPlaying, requestedBy));
@@ -84,7 +90,10 @@ async function createNewPlayer(voiceChannel) {
     });
 }
 
-module.exports.run = async (message, args, isPlaylist) => {
+module.exports.createNewPlayer = async (voiceChannel) => createNewPlayer(voiceChannel);
+
+
+module.exports.run = async (message, args) => {
     if(!args) {
         args = message.options.getString('input');
     }
@@ -105,12 +114,12 @@ module.exports.run = async (message, args, isPlaylist) => {
     }
 
     const video = await videoFinder(args);
-    vcInfo.queue.add(videoInfo(video, message.user));
-    if (!isPlaylist) {
-        message.reply(`Dodano do kolejki: ***${video.title}***`);
+    if (!video) {
+        return message.reply("Nie znaleziono podanego utworu");
     }
 
-    if (vcInfo.queue.length === 1) {
-        await playNext(voiceChannel);
-    }
+    vcInfo.queue.add(videoInfo(video, message.user));
+    message.reply(`Dodano do kolejki: ***${video.title}***`);
+
+    await playNext(voiceChannel);
 }
