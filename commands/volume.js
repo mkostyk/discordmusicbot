@@ -1,32 +1,21 @@
-let { voiceChannels } = require('../index');
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports.data =
     new SlashCommandBuilder()
         .setName("volume")
-        .setDescription("Ustawia głośność na podaną wartość z zakresu 0 - 200")
+        .setDescription("Changes volume (possible values: 0 - 200)")
         .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
         .addIntegerOption(option => option
             .setName('input')
-            .setDescription('Nowa głośność')
+            .setDescription('New volume')
             .setRequired(true))
 
-module.exports.run = async (message) => {
-    const args = message.options.getInteger('input');
-    if (args < 0 || args > 200) return message.reply("Głośność musi znajdować się w przedziale od 0 do 200");
+module.exports.run = async (message, voiceChannel, vcInfo) => {
+    const value = message.options.getInteger('input');
+    if (value < 0 || value > 200) return message.reply("New volume must be in 0 - 200 range");
 
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by zmienić głośność");
-    }
+    vcInfo.resource.volume.setVolume(value / 100);
 
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
-    vcInfo.resource.volume.setVolume(args / 100);
-
-    message.reply(`Głośność ustawiona na: ${args}`);
+    message.reply(`Volume set on: ${value}%`);
 }

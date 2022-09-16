@@ -1,4 +1,3 @@
-let { voiceChannels } = require('../index');
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const List = require("collections/list");
@@ -6,35 +5,25 @@ const List = require("collections/list");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("skip-range")
-        .setDescription("Pomija zakres utworów z kolejki")
+        .setDescription("Deletes songs in given range from queue")
         .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
         .addIntegerOption(option => option
             .setName('start')
-            .setDescription('Numer utworu na kolejce od którego rozpocząć pomijanie')
+            .setDescription('First position to delete')
             .setRequired(true))
         .addIntegerOption(option => option
             .setName('end')
-            .setDescription('Numer utworu na kolejce do którego pominąć')
+            .setDescription('Last position to delete')
             .setRequired(true))
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by pominąć utwór");
-    }
-
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
+module.exports.run = async (message, voiceChannel, vcInfo) => {
     let queue = vcInfo.queue;
 
     let start = message.options.getInteger('start') - 1;
     let end = message.options.getInteger('end') - 1;
 
     if (start >= queue.length) {
-        message.reply("Kolejka jest zbyt krótka");
+        message.reply("Queue is too short.");
     }
 
     let arrayQueue = Array.from(queue);
@@ -49,5 +38,5 @@ module.exports.run = async (message) => {
     }
 
     vcInfo.queue = newQueue;
-    message.reply("Utwory pominięte")
+    message.reply("Songs has been skipped.")
 }

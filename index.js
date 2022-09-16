@@ -10,7 +10,7 @@ const commands = [];
 
 bot.commands = new Discord.Collection();
 
-// Tutaj przechowujemy wszystkie dane dotyczące kanałów.
+// Our "database" of all the necessary information about the channels
 voiceChannels = new Map();
 module.exports = { voiceChannels };
 
@@ -35,10 +35,9 @@ fs.readdir("./commands", (err, files) => {
 
 bot.on("ready", async () => {
     console.log(`${bot.user.username} is online!`);
-    bot.user.setActivity('/help ||| Wersja: 0.1', { type: "PLAYING" });
+    bot.user.setActivity('/help ||| Version 1.0', { type: "PLAYING" });
 
-    // Some weird discord shit
-
+    // Some weird discord stuff
     const botID = bot.user.id;
     const rest = new REST({ version: '9' }).setToken(token);
 
@@ -64,16 +63,30 @@ bot.on('interactionCreate', async message => {
     if (message.user.bot || message.channel.type === "dm" || !message.isCommand()) return;
 
     const commandName = message.commandName;
-    const commandfile = bot.commands.get(commandName) || bot.commands.find(comm => comm.help.aliases && comm.help.aliases.includes(commandName)); //plik z komendami
+    const commandfile = bot.commands.get(commandName) || bot.commands.find(comm => comm.help.aliases && comm.help.aliases.includes(commandName));
+    let voiceChannel, vcInfo;
+
+    // Error handling
+    if (commandName != "help") {
+        voiceChannel = message.member.voice.channel;
+        if (!voiceChannel) {
+            return message.reply("You must be on voice channel to do that");
+        }
+
+        vcInfo = voiceChannels.get(voiceChannel.id);
+        if (!vcInfo && commandName != "play") {
+            return message.reply("Bot is not on the same channel as you");
+        }
+    }
 
     if (commandfile) {
         try {
-            commandfile.run(message);
+            commandfile.run(message, voiceChannel, vcInfo);
         } catch (error) {
             console.error(error);
         }
     }
 });
 
-bot.login(token); //odpalenie bota
+bot.login(token);
 

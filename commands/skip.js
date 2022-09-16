@@ -1,4 +1,3 @@
-let { voiceChannels } = require('../index');
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const Set = require("collections/set");
@@ -6,36 +5,30 @@ const Set = require("collections/set");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("skip")
-        .setDescription("Pomija początkowe utwory")
+        .setDescription("Skips given amount of songs (default: 1)")
         .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
         .addIntegerOption(option => option
-            .setName('count')
-            .setDescription('Liczba utworów do pominięcia')
+            .setName('amount')
+            .setDescription('Amount of songs to be skipped')
             .setRequired(false))
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by pominąć utwór");
+module.exports.run = async (message, voiceChannel, vcInfo) => {
+    let amount = message.options.getInteger('amount');
+
+    if (!amount) {
+        amount = 1;
     }
 
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
-    let count = message.options.getInteger('count');
-
-    if (!count) {
-        count = 1;
-    }
-
-    // Usuwamy do count - 1, ponieważ ostatni element zostanie usunięty poprzez player.stop()
-    for (let index = 0; index < count - 1 && vcInfo.queue.length > 0; index++) {
+    // We skip amount - 1 songs from the queue, because we also skip one currently playing.
+    for (let index = 0; index < amount - 1 && vcInfo.queue.length > 0; index++) {
         vcInfo.queue.shift();
     }
 
     vcInfo.player.stop();
     vcInfo.skipVotes = new Set();
-    message.reply("Utwory pominięte")
+    if (amount === 1) {
+        message.reply(`Song has been skipped`);
+    } else {
+        message.reply(`${amount} songs has been skipped`);
+    }
 }

@@ -1,6 +1,10 @@
 # discordmusicbot
 This is a Discord music bot written in Discord.js v13.
 
+## It's finally here!
+The fully functioning 1.0 version was finally released to the world! After hours of development and bugfixing
+the bot is finally out of beta and ready to be used by anyone. For installation guide look at the bottom of this README.
+
 ## Features:
 - playing songs by name or yt link
 - playing playlists
@@ -13,6 +17,10 @@ This is a Discord music bot written in Discord.js v13.
 - multi-server support
 
 ## New:
+- v1.0:
+    - English language support
+    - improved /help
+    - multiple bug fixes
 - v0.5:
     - commands now require certain permissions
     - shuffling queue

@@ -1,4 +1,3 @@
-const { voiceChannels } = require('../index');
 const { timeToString } = require('../helpers/helper');
 const progressbar = require('string-progressbar');
 const Discord = require("discord.js");
@@ -8,22 +7,12 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("np")
-        .setDescription("Wyświetla informacje o obecnym utworze")
+        .setDescription("Shows currently playing song")
         .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by sprawdzić obecny utwór");
-    }
-
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
-    if (vcInfo.queue.length === 0) {
-        return message.reply("Obecnie na bocie nic nie leci");
+module.exports.run = async (message, voiceChannel, vcInfo) => {
+    if (!vcInfo.nowPlaying) {
+        return message.reply("There is no song currently playing.");
     }
 
     let video = vcInfo.nowPlaying.video;
@@ -39,9 +28,9 @@ module.exports.run = async (message) => {
         .setTitle(video.title)
         .setThumbnail(video.thumbnail)
         .setDescription(progressbar.filledBar(duration, time)[0])
-        .addField("Czas Trwania: ", "`" + timeToString(time) + " / " + timeToString(duration) + "`")
-        .addField("Puszczone przez: ", `<@${requestedBy.id}>`)
-        .addField("Autor: ", video.author.name, true)
+        .addField("Duration: ", "`" + timeToString(time) + " / " + timeToString(duration) + "`")
+        .addField("Requested by: ", `<@${requestedBy.id}>`)
+        .addField("Author: ", video.author.name, true)
 
     message.reply({ embeds: [nowPlayingEmbed] })
 

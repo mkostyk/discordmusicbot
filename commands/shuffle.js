@@ -1,4 +1,3 @@
-let { voiceChannels } = require('../index');
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const List = require("collections/list");
@@ -6,7 +5,7 @@ const List = require("collections/list");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("shuffle")
-        .setDescription("Losowo miesza kolejkę")
+        .setDescription("Shuffles queue")
         .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
 
 const shuffleArray = (array) => {
@@ -24,26 +23,16 @@ const arrayToList = (arr) => {
     return list;
 }
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by pomieszać kolejkę");
-    }
-
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
+module.exports.run = async (message, voiceChannel, vcInfo) => {
     let queue = vcInfo.queue;
 
     if (queue.length === 0) {
-        return message.reply(`Kolejka jest pusta!`);
+        return message.reply(`Queue is empty.`);
     }
 
     let queueArray = Array.from(queue);
     shuffleArray(queueArray);
     vcInfo.queue = arrayToList(queueArray);
 
-    message.reply("Kolejka została wymieszana");
+    message.reply("Queue has been shuffled.");
 }

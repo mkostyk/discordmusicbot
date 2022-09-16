@@ -5,22 +5,12 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("loop")
-        .setDescription("Zapętla utwór")
+        .setDescription("Loops current song")
         .setDefaultMemberPermissions(Permissions.FLAGS.MANAGE_CHANNELS)
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by zapętlić utwór");
-    }
-
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
+module.exports.run = async (message, voiceChannel, vcInfo) => {
     vcInfo.loop = true;
-    message.reply("Utwór został zapętlony");
+    message.reply("Song has been looped.");
 
     voiceChannels.set(voiceChannel.id, vcInfo);
 }

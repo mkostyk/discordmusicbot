@@ -1,4 +1,3 @@
-const { voiceChannels } = require('../index');
 const Discord = require("discord.js");
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require("@discordjs/builders");
@@ -6,14 +5,14 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("queue")
-        .setDescription("Wyświetla obecną kolejkę")
+        .setDescription("Shows queue")
         .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
 
 const showQueue = async (message, queue, page) => {
     let numberOfPages = Math.ceil(queue.length / 10);
     let queueEmbed = new Discord.MessageEmbed()
         .setColor("#ff9900")
-        .setTitle(`Kolejka (strona ${page}/${numberOfPages}):`)
+        .setTitle(`Queue (page ${page}/${numberOfPages}):`)
 
     let error = false;
     let startPosition = (page - 1) * 10, endPosition = page * 10 - 1;
@@ -21,7 +20,7 @@ const showQueue = async (message, queue, page) => {
     for (let index = startPosition; index <= endPosition && index < queue.length; index++) {
         let info = queueArray[index];
         queueEmbed.addField(`**${index + 1}.** ${info.video.title} ` + "[" + info.video.duration.timestamp + "]",
-            `Puszczone przez: <@${info.requestedBy.id}>`);
+            `Requested by: <@${info.requestedBy.id}>`);
     }
 
     if (!error) {
@@ -38,33 +37,23 @@ const removeReactionByUser = async (message, userId) => {
             await reaction.users.remove(userId);
         }
     } catch (error) {
-        console.error('Błąd usuwania reakcji');
+        console.error('Error while deleting reaction');
     }
 }
 
 
-module.exports.run = async (message) => {
-    const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by wyświetlić kolejkę");
-    }
-
-    let vcInfo = voiceChannels.get(voiceChannel.id);
-    if (!vcInfo) {
-        return message.reply("Bot nie znajduje się na tym samym kanale co Ty");
-    }
-
+module.exports.run = async (message, voiceChannel, vcInfo) => {
     let queue = vcInfo.queue;
 
     if (queue.length === 0) {
-        return message.reply(`Kolejka jest pusta!`);
+        return message.reply(`Queue is empty.`);
     }
 
     let page = 1;
     let numberOfPages = Math.ceil(queue.length / 10);
 
-    // To pozwala używać zawsze message.editReply w showQueue()
-    let tempEmbed = new Discord.MessageEmbed().setTitle(`Wyświetlanie kolejki...`);
+    // This allows us to always use message.editReply in showQueue().
+    let tempEmbed = new Discord.MessageEmbed().setTitle(`Showing queue...`);
     await message.reply({ embeds: [tempEmbed] });
 
     const botMessage = await message.fetchReply();

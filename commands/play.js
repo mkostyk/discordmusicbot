@@ -17,11 +17,11 @@ const ytSearch = require("yt-search");
 module.exports.data =
     new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Odtwarza film z yt lub dodaje go do kolejki odtwarzania")
+        .setDescription("Adds video/playlist to queue")
         .setDefaultMemberPermissions(Permissions.FLAGS.CONNECT)
         .addStringOption(option => option
                 .setName('input')
-                .setDescription('Link lub nazwa filmu')
+                .setDescription('Link or name of video/link to playlist')
                 .setRequired(true));
 
 
@@ -32,23 +32,20 @@ const playNext = async (voiceChannel) => {
     let player = vcInfo.player;
 
     if (vcInfo.queue.length === 0) {
-        player.stop();
         vcInfo.connection.destroy();
-        voiceChannels.delete(voiceChannel.id);
         return;
     }
 
     const nowPlaying = vcInfo.queue.peek().video;
 
-    // Nie ruszać, ytdl ma buga w node.js wersje >=16, te śmieszne opcje pozwalają zminimalizować jego
-    // negatywne skutki.
+    // DO NOT TOUCH, ytdl library has a bug in node.js >= 16, these options minimize this bug's effects
     let url = `https://youtube.com/watch?v=${nowPlaying.videoId}`;
     const stream = ytdl(url, {
         filter: "audioonly",
         highWaterMark: 1 << 30,
         liveBuffer: 1 << 30,
         dlChunkSize: 0,
-        bitrate: 128, // Discord nie obsługuje więcej
+        bitrate: 128,
     });
 
     const resource = createAudioResource(stream, {inlineVolume: true});
@@ -73,12 +70,19 @@ const createNewPlayer = async (voiceChannel) => {
     });
 
     let player = createAudioPlayer();
-    let vcInfo = voiceChannelInfo(connection, player, new List(), null, false, null, 0, 0, true, new Set());
-
     connection.subscribe(player);
+
+    let vcInfo = voiceChannelInfo(connection, player, new List(), null, false, null, 0, 0, true, new Set());
     voiceChannels.set(voiceChannel.id, vcInfo);
 
-    // Dodanie nasłuchiwaczy
+    // Adding listeners
+    connection.on("disconnected", () => {
+        voiceChannels.delete(voiceChannel.id);
+    });
+
+    connection.on("destroyed", () => {
+        voiceChannels.delete(voiceChannel.id);
+    });
 
     player.on('error', (error) => console.error(error));
 
@@ -100,46 +104,41 @@ const playPlaylist = async (message, vcInfo, voiceChannel) => {
     const playlistId = message.options.getString('input').split("list=")[1];
     let playlist = await ytSearch({ listId: playlistId });
     if (!playlist) {
-        message.reply("Nie znaleziono playlisty. Sprawdź czy nie została ona ustawiona jako prywatna.")
+        message.reply("Playlist not found. Check its privacy setting, it needs to be a public or unlisted playlist in order for this command to work.")
     }
 
-    await message.reply(`Trwa dodawanie playlisty do kolejki...`);
+    await message.reply(`Adding playlist...`);
 
     for (const video of playlist.videos) {
         await vcInfo.queue.add(videoInfo(video, message.user));
     }
 
-    await message.editReply('Playlista pomyślnie dodana');
+    await message.editReply('Playlist added.');
     await playNext(voiceChannel);
 }
 
 
-const playVideo = async (args, message, vcInfo, voiceChannel) => {
-    const video = await videoFinder(args);
+const playVideo = async (request, message, vcInfo, voiceChannel) => {
+    const video = await videoFinder(request);
     if (!video) {
-        return message.reply("Nie znaleziono podanego utworu");
+        return message.reply("Song not found.");
     }
 
     vcInfo.queue.add(videoInfo(video, message.user));
-    message.reply(`Dodano do kolejki: ***${video.title}***`);
+    message.reply(`Added to queue: ***${video.title}***`);
 
     await playNext(voiceChannel);
 }
 
 
-module.exports.run = async (message, args) => {
-    if(!args) {
-        args = message.options.getString('input');
-    }
+module.exports.run = async (message) => {
+    let request = message.options.getString('input');
 
     const voiceChannel = message.member.voice.channel;
-    if (!voiceChannel) {
-        return message.reply("Musisz być na kanale by puścić utwór");
-    }
 
     let vcInfo = voiceChannels.get(voiceChannel.id);
     if (!vcInfo && getVoiceConnection(voiceChannel.guild.id)) {
-        return message.reply("Bot nie może być na więcej niż jednym kanale naraz");
+        return message.reply("Bot can't be on more than one channel at the same time");
     }
 
     if (!vcInfo) {
@@ -147,10 +146,10 @@ module.exports.run = async (message, args) => {
         vcInfo = voiceChannels.get(voiceChannel.id);
     }
 
-    let isPlaylist = args.includes("playlist?list=");
+    let isPlaylist = request.includes("playlist?list=");
     if (isPlaylist) {
         await playPlaylist(message, vcInfo, voiceChannel);
     } else {
-        await playVideo(args, message, vcInfo, voiceChannel);
+        await playVideo(request, message, vcInfo, voiceChannel);
     }
 }
