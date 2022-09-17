@@ -41,11 +41,9 @@ the bot is finally out of beta and ready to be used by anyone. For installation 
 ## How to use?
 - Install all the required packages mentioned in package.json
 - Get bot token from [here](https://discord.com/developers/applications)
-- Create config.json file and make it look like this
+- Create .env file and make it look like this
   ```
-	{ 
-		"token": "YOUR_BOT_TOKEN"
-	}
+  TOKEN="YOUR TOKEN HERE"
   ```
 - start command prompt from the folder index.js is located in
 - run ``` node index.js ``` in your command prompt to start bot.
