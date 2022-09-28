@@ -58,11 +58,17 @@ const playNext = async (voiceChannel) => {
     vcInfo.nowPlaying = vcInfo.queue.peek();
     vcInfo.queue.shift();
 
-    await player.play(resource);
+    try {
+        await player.play(resource);
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+
 }
 
 
-const createNewPlayer = async (voiceChannel) => {
+const createNewPlayer = async (message, voiceChannel) => {
     let connection = joinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: voiceChannel.guild.id,
@@ -95,7 +101,13 @@ const createNewPlayer = async (voiceChannel) => {
             vcInfo.queue.add(videoInfo(nowPlaying, requestedBy));
         }
 
-        playNext(voiceChannel);
+        try {
+            playNext(voiceChannel);
+        } catch (error) {
+            console.error(error);
+            message.channel.send("Something went wrong.");
+        }
+
     });
 }
 
@@ -114,7 +126,11 @@ const playPlaylist = async (message, vcInfo, voiceChannel) => {
     }
 
     await message.editReply('Playlist added.');
-    await playNext(voiceChannel);
+    try {
+        await playNext(voiceChannel);
+    } catch (error) {
+        await message.editReply('Something went wrong.')
+    }
 }
 
 
@@ -127,7 +143,11 @@ const playVideo = async (request, message, vcInfo, voiceChannel) => {
     vcInfo.queue.add(videoInfo(video, message.user));
     message.reply(`Added to queue: ***${video.title}***`);
 
-    await playNext(voiceChannel);
+    try {
+        await playNext(voiceChannel);
+    } catch (error) {
+        await message.editReply('Something went wrong.')
+    }
 }
 
 
@@ -142,11 +162,11 @@ module.exports.run = async (message) => {
     }
 
     if (!vcInfo) {
-        await createNewPlayer(voiceChannel, message.user);
+        await createNewPlayer(message, voiceChannel);
         vcInfo = voiceChannels.get(voiceChannel.id);
     }
 
-    let isPlaylist = request.includes("playlist?list=");
+    let isPlaylist = request.includes("list=");
     if (isPlaylist) {
         await playPlaylist(message, vcInfo, voiceChannel);
     } else {
