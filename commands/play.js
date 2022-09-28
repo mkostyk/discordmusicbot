@@ -146,7 +146,7 @@ module.exports.run = async (message) => {
         vcInfo = voiceChannels.get(voiceChannel.id);
     }
 
-    let isPlaylist = request.includes("playlist?list=");
+    let isPlaylist = request.includes("list=");
     if (isPlaylist) {
         await playPlaylist(message, vcInfo, voiceChannel);
     } else {
